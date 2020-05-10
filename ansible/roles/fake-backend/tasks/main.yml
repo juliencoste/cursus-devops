@@ -1,1 +1,97 @@
+---
 
+# This playbook is used to deploy fake-backend application based on Docker
+
+# build and push builded images
+
+- name: Log into DockerHub
+  docker_login:
+    username: "{{ docker_hub_login }}"
+    email: "{{ docker_hub_email }}"
+    password: "{{ docker_hub_password }}"
+- name: create project directory
+  file:
+    path: "{{home}}/fake-backend"
+    state: directory
+- name: copy devops private key file
+  copy:
+    content: '{{ github_private_key }}'
+    dest: "{{home}}/.ssh/id_rsa"
+    owner: centos
+
+- name: Retrieve fake-backend addons source code
+  git:
+    repo: "{{ fake_backend_source_repo  }}"
+    dest: "{{ home }}/fake-backend"
+    accept_hostkey: yes
+    force: yes
+    recursive: no
+    key_file: "{{ home }}/.ssh/id_rsa"
+    version: "{{ fake_backend_source_branch }}"
+
+- name: Build api image and push it to a private repo
+  docker_image:
+    build:
+      path: "{{ home }}/fake-backend"
+#    name: "{{ docker_hub_login }}/fake-backend"
+    name: "34.203.209.37:5000/fake-backend"
+    tag: "{{fake_backend_docker_image_tag}}"
+    push: yes
+    source: build
+
+#- name: create volume database
+#  file:
+#    path: "{{ volume_database }}"
+#    state: directory
+
+
+# docker network 
+
+- name: crete docker network to interconnect containers
+  docker_network:
+    name: fake_backend_network 
+
+# deploy database
+
+- name: Deploy database
+  docker_container:
+    name: "db281003"
+    hostname: "db281003"
+    image: "mysql:5.7"
+    state: "started"
+    restart_policy: "always"
+    networks:
+      - name: fake_backend_network
+    volumes:
+       - "{{ home }}/mysql_config:/var/lib/mysql"
+#      - "{{ volume_database }}:/var/lib/mysql"
+    env:
+      MYSQL_ROOT_PASSWORD: rootpwd281003
+      MYSQL_DATABASE: battleboat
+      MYSQL_USER: battleuser
+      MYSQL_PASSWORD: battlepass
+     
+# deploy api
+
+- name: Deploy battleboat
+  docker_container:
+    name: battle281003 
+    hostname: battle281003
+    image: "34.203.209.37:5000/fake-backend:{{fake_backend_docker_image_tag}}"
+#    image: "{{ docker_hub_login }}/fake-backend:{{fake_backend_docker_image_tag}}"
+    state: started
+    restart_policy: "always"
+    volumes:
+      - "{{ home }}/fake-backend/battleboat:/etc/backend/static"
+    networks:
+      - name: fake_backend_network 
+    ports:
+      - "80:3000"
+    env:
+      DATABASE_HOST: "db281003"
+      DATABASE_PORT: "3306"
+      DATABASE_USER: "battleuser"
+      DATABASE_PASSWORD: "battlepass"
+      DATABASE_NAME: "battleboat" 
+    links:
+      - db281003

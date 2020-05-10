@@ -1,0 +1,10 @@
+---
+- name: Deploy fake-backend app 
+  hosts: docker 
+  gather_facts: False
+  become: true
+  vars_files:
+    - "files/secrets/devops.yml"
+  roles:
+    - { role: fake-backend }
+

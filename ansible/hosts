@@ -1,2 +1,4 @@
 [all]
 localhost ansible_connection=local
+[docker]
+172.31.80.9

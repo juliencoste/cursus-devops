@@ -139,7 +139,7 @@ Resources:
             #!/bin/bash
           
             # Desactivate ssh timer
-            sudo echo 'ClientAliveInterval 4' >> /etc/ssh/sshd_config
+            sudo echo 'ClientAliveInterval 60' >> /etc/ssh/sshd_config
             sudo echo 'ClientAliveCountMax 22' >> /etc/ssh/sshd_config
             sudo systemctl restart sshd
           
@@ -180,7 +180,7 @@ Resources:
             #!/bin/bash
           
             # Desactivate ssh timer
-            sudo echo 'ClientAliveInterval 4' >> /etc/ssh/sshd_config
+            sudo echo 'ClientAliveInterval 60' >> /etc/ssh/sshd_config
             sudo echo 'ClientAliveCountMax 22' >> /etc/ssh/sshd_config
             sudo systemctl restart sshd
           
@@ -204,7 +204,7 @@ Resources:
             #!/bin/bash
             
             # Desactivate ssh timer
-            sudo echo 'ClientAliveInterval 4' >> /etc/ssh/sshd_config
+            sudo echo 'ClientAliveInterval 60' >> /etc/ssh/sshd_config
             sudo echo 'ClientAliveCountMax 22' >> /etc/ssh/sshd_config
             sudo systemctl restart sshd
           
